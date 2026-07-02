@@ -1,0 +1,12 @@
+# 忽略所有可执行文件
+*.exe
+*.out
+
+# 忽略 VS 自动生成的隐藏本地缓存文件夹
+.vs/
+
+# 忽略 CMake 生成的中间构建目录
+/build/
+/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
