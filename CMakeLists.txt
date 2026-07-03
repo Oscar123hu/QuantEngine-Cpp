@@ -8,4 +8,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(include)
 
 # 核心：必须精确指定这两个源文件参与编译！
-add_executable(QuantEngine src/main.cpp src/OrderBook.cpp)
+add_executable(QuantEngine src/main.cpp src/OrderBook.cpp src/MarketDataParser.cpp)

@@ -1,27 +1,41 @@
+#include <iostream>
+#include <vector>
 #include "OrderBook.h"
+#include "MarketDataParser.h"
 
 int main() {
     OrderBook book;
 
-    std::cout << "========= 量化本地测试 =========" << std::endl;
+    std::cout << "========= 零拷贝流式 CSV 行情解析测试 =========" << std::endl;
 
-    // 场景 1：初始化市场，有两位卖家在排队挂单
-    std::cout << "\n[动作] 散户 A 挂单：以 100.50 元 卖出 10 手" << std::endl;
-    book.submitOrder({ 1001, 100.5, 10, Side::SELL });
+    // 模拟从大型历史行情文件（CSV）中读取出来的流式行文本
+    std::vector<std::string_view> mockCsvFile = {
+        "1672531199000,1001,100.50,10,SELL",
+        "1672531199005,1002,100.30,5,SELL",
+        "1672531199010,2001,100.60,12,BUY"
+    };
 
-    std::cout << "[动作] 散户 B 挂单：以 100.30 元 卖出 5 手 (更低更优质的要价)" << std::endl;
-    book.submitOrder({ 1002, 100.3, 5, Side::SELL });
+    TickRecord record;
+    for (std::string_view line : mockCsvFile) {
+        std::cout << "\n[网络行情流滚入] 原始行: " << line << std::endl;
 
-    // 观察初始盘口
-    book.printBook();
+        // 1. 触发零拷贝解析
+        if (MarketDataParser::parseLine(line, record)) {
+            std::cout << "  └─ [解析成功] 零拷贝时间戳: " << record.timestamp
+                << " | 价格: " << record.price
+                << " | 数量: " << record.qty << std::endl;
 
-    // 场景 2：重头戏！来了一个好战的机构大买单，出价极高，企图扫盘
-    std::cout << "\n[动作] 机构 C 砸单：以 100.60 元 强行买入 12 手" << std::endl;
-    book.submitOrder({ 2001, 100.6, 12, Side::BUY });
+            // 2. 直接将解析出来的结构体喂进撮合内核
+            book.submitOrder({ record.orderId, record.price, record.qty, record.side });
+        }
+        else {
+            std::cerr << "  └─ [解析失败] 数据行格式损坏！" << std::endl;
+        }
 
-    // 再次观察撮合后的盘口快照
-    book.printBook();
+        // 3. 打印实时动态盘口
+        book.printBook();
+    }
 
-    std::cout << "========= 测试结束，状态完美 =========" << std::endl;
+    std::cout << "========= 历史数据回测流运行结束 =========" << std::endl;
     return 0;
 }
