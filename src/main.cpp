@@ -1,41 +1,58 @@
 #include <iostream>
-#include <vector>
+#include <fstream>
+#include <string>
+#include <string_view>
 #include "OrderBook.h"
 #include "MarketDataParser.h"
+#include "SimpleStrategy.h" 
 
 int main() {
     OrderBook book;
+    SimpleStrategy strategy(5); 
 
-    std::cout << "========= 零拷贝流式 CSV 行情解析测试 =========" << std::endl;
+    std::cout << "========= 阶段三终极合体：流式量化回测系统启动 =========" << std::endl;
 
-    // 模拟从大型历史行情文件（CSV）中读取出来的流式行文本
-    std::vector<std::string_view> mockCsvFile = {
-        "1672531199000,1001,100.50,10,SELL",
-        "1672531199005,1002,100.30,5,SELL",
-        "1672531199010,2001,100.60,12,BUY"
-    };
+    // 打开真实的磁盘行情 CSV 文件（如果 VS 提示找不到，请自行改为绝对路径）
+    std::ifstream file("D:\\QuantEngine-Cpp\\market_data.csv");
+    if (!file.is_open()) {
+        std::cerr << "[严重错误] 无法打开行情文件！请确认路径是否正确。" << std::endl;
+        return -1;
+    }
 
+    std::string line;
     TickRecord record;
-    for (std::string_view line : mockCsvFile) {
-        std::cout << "\n[网络行情流滚入] 原始行: " << line << std::endl;
+    uint64_t lineCount = 0;
+
+    // 流式吞噬循环开始
+    while (std::getline(file, line)) {
+        lineCount++;
+        std::string_view lineView(line);
 
         // 1. 触发零拷贝解析
-        if (MarketDataParser::parseLine(line, record)) {
-            std::cout << "  └─ [解析成功] 零拷贝时间戳: " << record.timestamp
+        if (MarketDataParser::parseLine(lineView, record)) {
+            std::cout << "\n--------------------------------------------------" << std::endl;
+            std::cout << "[数据流激滚入] 行号: " << lineCount
+                << " | 时间戳: " << record.timestamp
+                << " | 方向: " << (record.side == Side::BUY ? "BUY" : "SELL")
                 << " | 价格: " << record.price
                 << " | 数量: " << record.qty << std::endl;
 
-            // 2. 直接将解析出来的结构体喂进撮合内核
+            // 2. 喂给策略大脑，实时增量更新数学指标并尝试激发信号
+            strategy.onTick(record);
+
+            // 3. 喂给订单簿心脏，触发限价撮合流
             book.submitOrder({ record.orderId, record.price, record.qty, record.side });
+
+            // 4. 打印当前最新的动态盘口
+            book.printBook();
         }
         else {
-            std::cerr << "  └─ [解析失败] 数据行格式损坏！" << std::endl;
+            std::cerr << "[警告] 第 " << lineCount << " 行数据格式损坏，自动跳过。" << std::endl;
         }
-
-        // 3. 打印实时动态盘口
-        book.printBook();
     }
 
-    std::cout << "========= 历史数据回测流运行结束 =========" << std::endl;
+    std::cout << "\n==================================================" << std::endl;
+    std::cout << "========= 回测流运行结束，系统状态完美！ =========" << std::endl;
+    file.close();
     return 0;
 }
