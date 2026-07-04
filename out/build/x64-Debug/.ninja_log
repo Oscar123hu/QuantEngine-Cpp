@@ -1,7 +1,5 @@
 # ninja log v6
-6	518	8047626799518981	CMakeFiles/QuantEngine.dir/src/main.cpp.obj	84303de06bc10adc
-13	585	8047281426138595	CMakeFiles/QuantEngine.dir/src/OrderBook.cpp.obj	dda1a812d11db607
-519	1216	8047626804699057	QuantEngine.exe	6c5d7fd6abb28620
-21	990	8047589652012195	CMakeFiles/QuantEngine.dir/src/MarketDataParser.cpp.obj	2ed3e9d081adbd0d
 6	512	8047628599307828	CMakeFiles/QuantEngine.dir/src/main.cpp.obj	84303de06bc10adc
+13	585	8047281426138595	CMakeFiles/QuantEngine.dir/src/OrderBook.cpp.obj	dda1a812d11db607
 513	1279	8047628604372213	QuantEngine.exe	6c5d7fd6abb28620
+21	990	8047589652012195	CMakeFiles/QuantEngine.dir/src/MarketDataParser.cpp.obj	2ed3e9d081adbd0d
