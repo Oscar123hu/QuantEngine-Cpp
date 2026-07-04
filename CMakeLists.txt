@@ -7,5 +7,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 包含头文件目录
 include_directories(include)
 
-# 核心：必须精确指定这几个源文件参与编译！
+#必须精确指定这几个源文件参与编译
 add_executable(QuantEngine src/main.cpp src/OrderBook.cpp src/MarketDataParser.cpp "include/SimpleStrategy.h")
