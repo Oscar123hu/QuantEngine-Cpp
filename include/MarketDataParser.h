@@ -1,19 +1,29 @@
 #pragma once
 #include <string_view>
-#include <vector>
+#include <cstdint>
 #include "OrderBook.h"
 
-// 每一行 Tick 行情流转的原始记录
+/**
+ * @brief Representation of a raw tick market data row.
+ */
 struct TickRecord {
-    std::string_view timestamp; // 零拷贝保留时间戳字符串
-    uint64_t orderId;
-    double price;
-    uint32_t qty;
-    Side side;
+    std::string_view timestamp; // Zero-copy view into origin input buffer
+    uint64_t orderId{0};
+    double price{0.0};
+    uint32_t qty{0};
+    Side side{Side::Buy};
 };
 
+/**
+ * @brief High-performance streaming market data parser.
+ */
 class MarketDataParser {
 public:
-    // 高性能流式解析单行 CSV 文本，成功返回 true 并填充 record
+    /**
+     * @brief Parses a single CSV line into a TickRecord structure.
+     * @param line Raw input text line from data source.
+     * @param record Output reference to be populated.
+     * @return true if parsing succeeded, false otherwise.
+     */
     static bool parseLine(std::string_view line, TickRecord& record);
 };
